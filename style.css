@@ -26,16 +26,54 @@ body, html {
 }
 
 
+/* Скроллбары */
+
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8f9fa;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #dadde1;
+  border-radius: 5px;
+  border: 2px solid #f8f9fa;
+}
+
+body::-webkit-scrollbar-thumb:hover {
+  background: #555;
+} 
+
+
+
 /* Рабочее пространство */
 
 
 .workspace {
-  width: 3000px;
-  height: 3000px;
-  background-color: #ffffff;
-  background-image: radial-gradient(#ccc 1px, transparent 1px);
-  background-size: 20px 20px;
   position: relative;
+  width: 5000px;
+  height: 5000px;
+  background-color: #f8f9fa;
+
+  background-image: 
+    radial-gradient(rgba(0, 0, 0, 0.33) 1.5px, transparent 1.5px),
+    radial-gradient(rgba(0, 0, 0, 0.12) 1px, transparent 1px);
+  background-size: 120px 120px, 30px 30px;
+  background-position: 0 0, 0 0;
+  overflow: hidden;
+  transition: background-color 0.3s ease;
+}
+
+body.mode-delete #workspace {
+  background-color: #fdf2f4;
+}
+
+body.mode-pencil #workspace {
+  background-color: #f2fdf7;
 }
 
 #roads-svg {
@@ -64,21 +102,22 @@ body, html {
 
 .tabs {
   display: flex;
-  border-bottom: 2px solid #000000;
-  color: black;
-  background: #f5f5f5;
+  width: 100%;
+  gap: 0;
 }
 
 .tab-btn {
   flex: 1;
   padding: 12px;
-  background: none;
   border: none;
-  font-family: inherit;
-  font-weight: bold;
-  font-size: 14px;
   cursor: pointer;
-  transition: background 0.2s;
+  background: #222530;
+  color: #fff;
+  text-align: center;
+}
+
+.theme-toggle-btn {
+  flex: 0 0 40px;
 }
 
 .tab-btn:not(:last-child) {
@@ -150,24 +189,11 @@ body, html {
 .tool-icon {
   width: 30px;
   height: 30px;
-  border: 2px solid #000000;
   margin-right: 15px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
-}
-
-.square-icon {
-  background-color: #fff;
-}
-
-.road-icon {
-  border: none; font-size: 20px;
-}
-
-.delete-icon {
-  border: none; font-size: 20px;
 }
 
 
@@ -219,6 +245,24 @@ body, html {
   display: none;
   pointer-events: none;
   z-index: 100;
+  box-shadow: 0 0 15px rgba(0, 172, 193, 0.15), inset 0 0 10px rgba(0, 172, 193, 0.05);
+  animation: ghostPulse 2s infinite ease-in-out;
+  transition: left 0.1s cubic-bezier(0.25, 1, 0.5, 1), top 0.1s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@keyframes ghostPulse {
+  0% {
+    border-color: rgba(0, 172, 193, 0.5);
+    box-shadow: 0 0 12px rgba(0, 172, 193, 0.1);
+  }
+  50% {
+    border-color: rgba(0, 172, 193, 1);
+    box-shadow: 0 0 20px rgba(0, 172, 193, 0.25);
+  }
+  100% {
+    border-color: rgba(0, 172, 193, 0.5);
+    box-shadow: 0 0 12px rgba(0, 172, 193, 0.1);
+  }
 }
 
 
@@ -240,12 +284,12 @@ body, html {
 
 
 .map-road {
-  stroke: #000000; 
+  stroke: var(--road-color, #000000);
   stroke-width: 4px;
   fill: none;
   stroke-linecap: round;
   stroke-linejoin: round;
-  transition: stroke 0.3s, stroke-width 0.3s;
+  transition: stroke 0.3s;
 }
 
 .road-appearing {
@@ -268,10 +312,6 @@ body, html {
 
 .map-road.type-wide {
   stroke-width: 8px !important;
-}
-
-.map-road[data-color="#ab47bc"]:not(.road-appearing):not(.road-dashed-appearing) {
-  animation: magicPulse 2s ease-in-out infinite alternate;
 }
 
 @keyframes magicPulse {
@@ -337,3 +377,292 @@ body, html {
   border-color: #00acc1 !important;
   box-shadow: 0 0 10px rgba(0, 172, 193, 0.5);
 }
+
+body.mode-delete .map-road:hover {
+  stroke: #ff0000 !important;
+  cursor: pointer;
+}
+
+.map-node-preview {
+  pointer-events: none !important;
+}
+
+body.mode-delete .map-node:hover {
+  border-color: #ff0000 !important;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+  cursor: pointer;
+}
+
+.node-disappearing {
+  animation: node-shrink 0.3s forwards ease-in;
+  pointer-events: none !important;
+}
+
+@keyframes node-shrink {
+  0% {
+    transform: scale(1); opacity: 1;
+  }
+  100% {
+    transform: scale(0); opacity: 0;
+  }
+}
+
+.delete-particle {
+  position: absolute;
+  background: #000000;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 999;
+  animation: particle-fade 0.5s forwards cubic-bezier(0.1, 0.8, 0.3, 1);
+}
+
+@keyframes particle-fade {
+  0% {
+    transform: translate(0, 0) scale(1); opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0;
+  }
+}
+
+
+/* Ночная тема */
+
+
+.theme-toggle-btn {
+  position: fixed; 
+  top: 20px;
+  right: 220px;
+  z-index: 1000;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.theme-toggle-btn:hover {
+  transform: scale(1.15) rotate(15deg);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-theme .theme-toggle-btn {
+  background: #222530;
+  border-color: #3d4357;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-theme .theme-toggle-btn:hover {
+  background: #2d313f;
+  border-color: #00ecc1;
+}
+
+#workspace {
+  position: relative;
+  width: 5000px;
+  height: 5000px;
+  background-color: #f8f9fa;
+  background-image: 
+    radial-gradient(rgba(0, 0, 0, 0.33) 1.5px, transparent 1.5px),
+    radial-gradient(rgba(0, 0, 0, 0.12) 1px, transparent 1px);
+  background-size: 120px 120px, 30px 30px;
+  background-position: 0 0, 0 0;
+  overflow: hidden;
+  transition: background-color 0.3s ease;
+}
+
+body.mode-delete #workspace { background-color: #fdf2f4; }
+body.mode-pencil #workspace { background-color: #f2fdf7; }
+
+.map-node-preview {
+  box-shadow: 0 0 15px rgba(0, 172, 193, 0.15), inset 0 0 10px rgba(0, 172, 193, 0.05);
+  animation: ghostPulseLight 2s infinite ease-in-out;
+  transition: left 0.1s cubic-bezier(0.25, 1, 0.5, 1), top 0.1s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@keyframes ghostPulseLight {
+  0% {
+    border-color: rgba(0, 172, 193, 0.5); box-shadow: 0 0 12px rgba(0, 172, 193, 0.1);
+  }
+  50% {
+    border-color: rgba(0, 172, 193, 1); box-shadow: 0 0 20px rgba(0, 172, 193, 0.25);
+  }
+  100% {
+    border-color: rgba(0, 172, 193, 0.5); box-shadow: 0 0 12px rgba(0, 172, 193, 0.1);
+  }
+}
+
+
+/* Стили ночной темы */
+
+   
+body.dark-theme #workspace {
+  background-color: #1a1c23;
+  background-image: 
+    radial-gradient(rgba(255, 255, 255, 0.33) 1.5px, transparent 1.5px),
+    radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+}
+
+body.dark-theme .map-road {
+  --road-color: #5a637d;
+}
+
+body.dark-theme .map-road {
+  --road-color: #5a637d;
+}
+
+body.mode-delete #workspace {
+  background-color: #fdf2f4;
+}
+
+body.dark-theme.mode-delete #workspace {
+  background-color: #281a1f;
+}
+
+body.dark-theme.mode-pencil #workspace { background-color: #182420; }
+
+body.dark-theme .map-node-preview {
+  box-shadow: 0 0 20px rgba(0, 236, 193, 0.2), inset 0 0 15px rgba(0, 236, 193, 0.05);
+  animation: ghostPulseDark 2s infinite ease-in-out;
+}
+
+@keyframes ghostPulseDark {
+  0% {
+    border-color: rgba(0, 236, 193, 0.4); box-shadow: 0 0 15px rgba(0, 236, 193, 0.1);
+  }
+  50% {
+    border-color: rgba(0, 236, 193, 1); box-shadow: 0 0 25px rgba(0, 236, 193, 0.35);
+  }
+  100% {
+    border-color: rgba(0, 236, 193, 0.4); box-shadow: 0 0 15px rgba(0, 236, 193, 0.1);
+  }
+}
+
+body.dark-theme .sidebar, body.dark-theme #sidebar, body.dark-theme .panel { 
+  background-color: #15161b !important;
+  color: #000000 !important;
+  border-left: 2px solid #2d313f !important;
+}
+
+body.dark-theme .tab-btn {
+  background: #222530;
+  color: #ffffff;
+  border-bottom: 2px solid #3d4357;
+}
+
+body.dark-theme .tab-btn.active {
+  background: #2b2f3d;
+  color: #fff;
+  border-bottom: 2px solid #00ecc1;
+}
+
+body.dark-theme .sidebar h3, body.dark-theme .sidebar label {
+    color: #ffffff !important;
+}
+
+body.dark-theme .tab-content {
+  color: white;
+}
+
+body.dark-theme .tool-item {
+  background: #222530;
+  color: #fff;
+  border: 1px solid #3d4357;
+}
+
+body.dark-theme .tool-item.active {
+    background-color: #2b2f3d !important;
+    border: 1px solid #00ecc1 !important;
+    color: #ffffff !important;
+}
+
+body.dark-theme .tool-btn, body.dark-theme button {
+  background-color: #2d313f;
+  color: #ffffff;
+  border: 2px solid #3d4357;
+}
+
+body.dark-theme .tool-btn.active {
+  background-color: #00ecc1;
+  color: #1a1c23;
+  border-color: #00ecc1;
+  box-shadow: 0 0 10px rgba(0, 236, 193, 0.4);
+}
+
+body.dark-theme input[type="text"], body.dark-theme select {
+  background-color: #2b2f3d !important;
+  color: #ffffff !important;
+  border: 1px solid #3d4357 !important;
+}
+
+body.dark-theme select option {
+  background-color: #1a1c23;
+  color: #ffffff;
+}
+
+body.dark-theme .sidebar button, body.dark-theme .map-file-controls button {
+    background-color: #2b2f3d !important;
+    color: #ffffff !important;
+    border: 1px solid #3d4357 !important;
+}
+
+body.dark-theme .map-file-controls {
+  background: #1a1c23 !important;
+  border-top: 2px solid #3d4357 !important;
+}
+
+body.dark-theme .map-file-controls button {
+  background: #222530 !important;
+  color: #fff !important;
+  border: 1px solid #3d4357 !important;
+}
+
+body.dark-theme .map-file-controls button:hover {
+  background: #2b2f3d !important;
+  border-color: #00ecc1 !important;
+}
+
+.theme-toggle-btn {
+  position: absolute;
+  right: calc(250px + 20px);
+  top: 20px;
+  
+  z-index: 1000;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+body.dark-theme .theme-toggle-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #f8f9fa; }
+body.dark-theme ::-webkit-scrollbar-track { background: #1a1c23; }
+::-webkit-scrollbar-thumb { background: #dadde1; border-radius: 5px; border: 2px solid #f8f9fa; }
+body.dark-theme ::-webkit-scrollbar-thumb { background: #2d313f; border: 2px solid #1a1c23; }
+body::-webkit-scrollbar-thumb:hover { background: #00acc1; }
+body.dark-theme::-webkit-scrollbar-thumb:hover { background: #00ecc1; }
